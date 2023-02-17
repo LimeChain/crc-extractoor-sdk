@@ -33,21 +33,22 @@ export class OptimismCRCClient {
     // See spec: https://github.com/ethereum-optimism/optimism/blob/develop/specs/proposals.md#l2-output-root-proposals-specification
     async generateLatestOutputData(): Promise<OutputData> {
 
+        const L1Block = await this.ethereum.getBlockByNumber("latest");
 
         // STEP 1 Get from the L1 Bedrock OutputOracle latest block number via latestBlockNumber view function - B.
         const latestBlockNumberCalldata = OutputOracleABICoder.latestBlockNumber();
-        const BHex = await this.ethereum.ethCall("latest", OutputOracleAddress, latestBlockNumberCalldata)
+        const BHex = await this.ethereum.ethCall(L1Block.number, OutputOracleAddress, latestBlockNumberCalldata)
         const B = bufferToInt(toBuffer(BHex));
 
 
         // STEP 2 Get from the L1 Bedrock OutputOracle the L2 Output index for B via getL2OutputIndexAfter - I
         const getL2OutputIndexAfterCalldata = OutputOracleABICoder.getL2OutputIndexAfter(B);
-        const IHex = await this.ethereum.ethCall("latest", OutputOracleAddress, getL2OutputIndexAfterCalldata);
+        const IHex = await this.ethereum.ethCall(L1Block.number, OutputOracleAddress, getL2OutputIndexAfterCalldata);
         const I = bufferToInt(toBuffer(IHex));
 
         // STEP 3 Get from the L1 Bedrock OutputOracle the L2 Output for block I
         const getL2OutputCalldata = OutputOracleABICoder.getL2Output(I);
-        const l2OutputDataHex = await this.ethereum.ethCall("latest", OutputOracleAddress, getL2OutputCalldata);
+        const l2OutputDataHex = await this.ethereum.ethCall(L1Block.number, OutputOracleAddress, getL2OutputCalldata);
         const contractL2OutputData = OutputOracleABICoder.decodeL2Output(l2OutputDataHex);
 
         if (Number(contractL2OutputData.l2BlockNumber) != B) {
@@ -55,7 +56,7 @@ export class OptimismCRCClient {
         }
 
         // STEP 4 Get from Optimism the block information for block B.
-        const block = await this.optimism.getBlockByNumber(B);
+        const block = await this.optimism.getBlockByNumber(`0x${B.toString(16)}`);
 
         // STEP 5 Get proof from Optimism Rollup node about the withdrawal contract address
         const withdrawalContractProof = await this.optimism.getProof(L2WithdrawalContractAddress, "0x0", `0x${B.toString(16)}`); // Slot does not matter
@@ -80,18 +81,22 @@ export class OptimismCRCClient {
         const S = `0x${SBN.toString("hex")}`
 
         // STEP 9 Get Proof for the storage S from Ethereum.
-        const optimismOutputRootProof = await this.ethereum.getProof(OutputOracleAddress, S, "latest");
+        const optimismOutputRootProof = await this.ethereum.getProof(OutputOracleAddress, S, L1Block.number);
         const combinedProof = MPTProofsEncoder.rlpEncodeProofs([optimismOutputRootProof.accountProof, optimismOutputRootProof.storageProof[0].proof]);
 
         const result: OutputData = {
+            l1BlockNumber: L1Block.number,
+            l1OutputOracleAddress: OutputOracleAddress,
             version: versionByte,
-            stateRoot: bufferToHex(block.stateRoot),
+            optimismStateRoot: bufferToHex(block.stateRoot),
             withdrawalStorageRoot: bufferToHex(account.stateRoot),
             blockHash: block.hash,
             blockNum: BHex,
             outputIndex: IHex,
             outputStorageSlot: S,
             outputRoot: outputRootHex,
+            accountProof: optimismOutputRootProof.accountProof,
+            storageProof: optimismOutputRootProof.storageProof[0].proof,
             outputRootRLPProof: combinedProof
         }
 

@@ -30,8 +30,8 @@ export class EthereumCRCClient {
         return this.request("eth_getProof", [targetAccount, [targetSlot], block]);
     }
 
-    async getBlockByNumber(block: number, hyderated: boolean = false): Promise<any> {
-        return this.request("eth_getBlockByNumber", [`0x${block.toString(16)}`, hyderated]);
+    async getBlockByNumber(block: string, hyderated: boolean = false): Promise<any> {
+        return this.request("eth_getBlockByNumber", [block, hyderated]);
     }
 
     async ethCall(block: number | string, to: string, input: any): Promise<any> {
