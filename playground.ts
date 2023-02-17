@@ -4,8 +4,8 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import Account from 'ethereumjs-account'
 import { MPTProofVerifier } from './src/verifier/MPTProofVerifier'
 import { MPTProofsEncoder } from './src/encoders/MPTProofsEncoder'
-import { EthereumRequester } from './src/networks/ethereum/EthereumRequester'
-import { OptimismRequester } from './src/networks/optimism/OptimismRequester'
+import { EthereumCRCClient } from './src/networks/ethereum/EthereumCRCClient'
+import { OptimismCRCClient } from './src/networks/optimism/OptimismCRCClient'
 const dotenv = require('dotenv');
 dotenv.config()
 
@@ -45,20 +45,21 @@ async function test2() {
 }
 
 async function test3() {
-    const fetcher = new EthereumRequester("..");
+    const fetcher = new EthereumCRCClient("..");
 
-    const res = await fetcher.getProof("0x058A39bEFBBA6a41e1CcBE97C3457dcc894B0fF2", "0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564", 8485133);
+    const block = 8485133;
+    const res = await fetcher.getProof("0x058A39bEFBBA6a41e1CcBE97C3457dcc894B0fF2", "0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564", `0x${block.toString(16)} `);
 
     console.log(res);
 }
 
 async function test4() {
     const blockNum = 5529028;
-    const fetcher = new OptimismRequester(process.env.OPTIMISM_GOERLI_RPC_URL, process.env.GOERLI_RPC_URL);
+    const fetcher = new OptimismCRCClient(process.env.OPTIMISM_GOERLI_RPC_URL, process.env.GOERLI_RPC_URL);
 
-    const output = await fetcher.generateOutput(blockNum);
+    const output = await fetcher.generateLatestOutputData();
 
     console.log(output);
 }
 
-test4()
+// test4()

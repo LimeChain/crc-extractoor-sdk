@@ -1,7 +1,7 @@
 import { EthereumProof } from "../../types/ethereum";
 import { paramsToRequest } from "../../utils/JSONRPCUtils";
 
-export class EthereumRequester {
+export class EthereumCRCClient {
 
     rpcUrl: string
 
@@ -26,12 +26,19 @@ export class EthereumRequester {
         return r.result;
     }
 
-    async getProof(targetAccount: string, targetSlot: string, block: number): Promise<EthereumProof> {
-        return this.request("eth_getProof", [targetAccount, [targetSlot], `0x${block.toString(16)}`]);
+    async getProof(targetAccount: string, targetSlot: string, block: string): Promise<EthereumProof> {
+        return this.request("eth_getProof", [targetAccount, [targetSlot], block]);
     }
 
     async getBlockByNumber(block: number, hyderated: boolean = false): Promise<any> {
         return this.request("eth_getBlockByNumber", [`0x${block.toString(16)}`, hyderated]);
+    }
+
+    async ethCall(block: number | string, to: string, input: any): Promise<any> {
+        return this.request("eth_call", [{
+            to: to,
+            input: input
+        }, block])
     }
 
 }
