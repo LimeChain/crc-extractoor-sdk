@@ -31,7 +31,7 @@ export class OptimismCRCClient {
     }
 
     // See spec: https://github.com/ethereum-optimism/optimism/blob/develop/specs/proposals.md#l2-output-root-proposals-specification
-    async generateLatestOutputData(): Promise<OutputData> {
+    async generateLatestOutputData(l1Block: string): Promise<OutputData> {
 
         const L1Block = await this.ethereum.getBlockByNumber("latest");
 
@@ -39,7 +39,6 @@ export class OptimismCRCClient {
         const latestBlockNumberCalldata = OutputOracleABICoder.latestBlockNumber();
         const BHex = await this.ethereum.ethCall(L1Block.number, OutputOracleAddress, latestBlockNumberCalldata)
         const B = bufferToInt(toBuffer(BHex));
-
 
         // STEP 2 Get from the L1 Bedrock OutputOracle the L2 Output index for B via getL2OutputIndexAfter - I
         const getL2OutputIndexAfterCalldata = OutputOracleABICoder.getL2OutputIndexAfter(B);
