@@ -12,6 +12,7 @@ async function run() {
     const arrayDefinitionPosition = 0; // Definition position of the array inside the solidity contract
     const indexInTheArray = 0; // The index of the element you are looking for
 
+    // Step 1 - Derive the storage slot from the array definition and index of the array
     const arrayDefinitionHash = keccak(setLengthLeft(toBuffer(arrayDefinitionPosition), 32));
     const arrayDefinitionBN = new BN(arrayDefinitionHash);
     const indexBN = new BN(indexInTheArray);
@@ -20,14 +21,19 @@ async function run() {
 
     const fetcher = new OptimismCRCClient(process.env.OPTIMISM_GOERLI_RPC_URL, process.env.GOERLI_RPC_URL);
 
+    // For informational purposes
     const l1Block = await fetcher.ethereum.getBlockByNumber(`0x${blockNum.toString(16)}`);
 
+    // Step 2 - Get all the information needed for the Optimism Output Root inclusion inside L1 proof
     const output = await fetcher.generateLatestOutputData(`0x${blockNum.toString(16)}`);
 
+    // Step 3 - Get all the information needed for the Merkle inclusion proof inside Optimism
     const getProofRes = await fetcher.optimism.getProof(targetAccount, slot, bufferToHex(unpadBuffer(toBuffer(output.blockNum))));
 
+    // Step 4 - RLP encode the Proof from Step 3
     const inclusionProof = MPTProofsEncoder.rlpEncodeProofs([getProofRes.accountProof, getProofRes.storageProof[0].proof]);
 
+    // Use the below as parameters to L2OptimismBedrockStateProver
 
     console.log("L1 BlockNumber:");
     console.log(blockNum);
