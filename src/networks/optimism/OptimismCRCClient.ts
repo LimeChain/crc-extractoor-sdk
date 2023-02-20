@@ -31,9 +31,9 @@ export class OptimismCRCClient {
     }
 
     // See spec: https://github.com/ethereum-optimism/optimism/blob/develop/specs/proposals.md#l2-output-root-proposals-specification
-    async generateLatestOutputData(l1Block: string): Promise<OutputData> {
+    async generateLatestOutputData(l1BlockNum: string): Promise<OutputData> {
 
-        const L1Block = await this.ethereum.getBlockByNumber("latest");
+        const L1Block = await this.ethereum.getBlockByNumber(l1BlockNum);
 
         // STEP 1 Get from the L1 Bedrock OutputOracle latest block number via latestBlockNumber view function - B.
         const latestBlockNumberCalldata = OutputOracleABICoder.latestBlockNumber();

@@ -18,16 +18,6 @@ async function run() {
 
     const storageValue = await MPTProofVerifier.verifyStorageProof(bufferToHex(account.stateRoot), storageSlot, storageProof);
     console.log("Storage Value:\n", bufferToHex(Buffer.from(storageValue)))
-
-    // const rlpAccountProof = MPTProofsEncoder.rlpEncodeProof(accountProof);
-    // console.log("RLP Encoded Account Proof:\n", rlpAccountProof);
-
-    // const rlpStorageProof = MPTProofsEncoder.rlpEncodeProof(storageProof);
-    // console.log("RLP Encoded Storage Proof:\n", rlpStorageProof);
-
-    // const combinedProof = MPTProofsEncoder.rlpEncodeProofs([accountProof, storageProof]);
-
-    // console.log("Combined Proof", combinedProof);
 }
 
 run()

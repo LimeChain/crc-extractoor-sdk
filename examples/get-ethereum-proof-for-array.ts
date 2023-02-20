@@ -22,9 +22,6 @@ async function run() {
 
     console.log(res);
 
-    const combinedProof = MPTProofsEncoder.rlpEncodeProofs([res.accountProof, res.storageProof[0].proof]);
-
-    console.log("Combined Proof:\n", combinedProof);
 }
 
 run()
